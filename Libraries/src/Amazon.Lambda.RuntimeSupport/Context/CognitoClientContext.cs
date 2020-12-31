@@ -15,46 +15,19 @@
 using Amazon.Lambda.Core;
 using System;
 using System.Collections.Generic;
-using ThirdParty.Json.LitJson;
+using System.Text.Json.Serialization;
 
 namespace Amazon.Lambda.RuntimeSupport
 {
     internal class CognitoClientContext : IClientContext
     {
+        [JsonPropertyName( "env" )]
         public IDictionary<string, string> Environment { get; internal set; }
 
+        [JsonPropertyName( "client" )]
         public IClientApplication Client { get; internal set; }
 
+        [JsonPropertyName( "custom" )]
         public IDictionary<string, string> Custom { get; internal set; }
-
-        internal static CognitoClientContext FromJson(string json)
-        {
-            var result = new CognitoClientContext();
-
-            if (!string.IsNullOrWhiteSpace(json))
-            {
-                var jsonData = JsonMapper.ToObject(json);
-
-                if (jsonData["client"] != null)
-                    result.Client = CognitoClientApplication.FromJsonData(jsonData["client"]);
-                if (jsonData["custom"] != null)
-                    result.Custom = GetDictionaryFromJsonData(jsonData["custom"]);
-                if (jsonData["env"] != null)
-                    result.Environment = GetDictionaryFromJsonData(jsonData["env"]);
-            }
-            return result;
-        }
-
-        private static IDictionary<string, string> GetDictionaryFromJsonData(JsonData jsonData)
-        {
-            var result = new Dictionary<string, string>();
-
-            foreach (var key in jsonData.PropertyNames)
-            {
-                result.Add(key, jsonData[key].ToString());
-            }
-
-            return result;
-        }
     }
 }

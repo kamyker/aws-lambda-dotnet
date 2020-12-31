@@ -14,41 +14,26 @@
  */
 using Amazon.Lambda.Core;
 using System;
-using ThirdParty.Json.LitJson;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Amazon.Lambda.RuntimeSupport
 {
     internal class CognitoClientApplication : IClientApplication
     {
+        [JsonPropertyName( "app_package_name" )]
         public string AppPackageName { get; internal set; }
 
+        [JsonPropertyName( "app_title" )]
         public string AppTitle { get; internal set; }
 
+        [JsonPropertyName("app_version_code" )]
         public string AppVersionCode { get; internal set; }
 
+        [JsonPropertyName( "app_version_name" )]
         public string AppVersionName { get; internal set; }
 
+        [JsonPropertyName("installation_id")]
         public string InstallationId { get; internal set; }
-
-        internal static CognitoClientApplication FromJsonData(JsonData jsonData)
-        {
-            var result = new CognitoClientApplication();
-
-            if (jsonData != null)
-            {
-                if (jsonData["app_package_name"] != null)
-                    result.AppPackageName = jsonData["app_package_name"].ToString();
-                if (jsonData["app_title"] != null)
-                    result.AppTitle = jsonData["app_title"].ToString();
-                if (jsonData["app_version_code"] != null)
-                    result.AppVersionCode = jsonData["app_version_code"].ToString();
-                if (jsonData["app_version_name"] != null)
-                    result.AppVersionName = jsonData["app_version_name"].ToString();
-                if (jsonData["installation_id"] != null)
-                    result.InstallationId = jsonData["installation_id"].ToString();
-            }
-
-            return result;
-        }
     }
 }

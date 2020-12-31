@@ -14,9 +14,8 @@
  */
 using Amazon.Lambda.Core;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Amazon.Lambda.RuntimeSupport.Helpers;
+using System.Text.Json;
 
 namespace Amazon.Lambda.RuntimeSupport
 {
@@ -46,8 +45,8 @@ namespace Amazon.Lambda.RuntimeSupport
 
             int.TryParse(_lambdaEnvironment.FunctionMemorySize, out _memoryLimitInMB);
             long.TryParse(_runtimeApiHeaders.DeadlineMs, out _deadlineMs);
-            _cognitoIdentityLazy = new Lazy<CognitoIdentity>(() => CognitoIdentity.FromJson(runtimeApiHeaders.CognitoIdentityJson));
-            _cognitoClientContextLazy = new Lazy<CognitoClientContext>(() => CognitoClientContext.FromJson(runtimeApiHeaders.ClientContextJson));
+            _cognitoIdentityLazy = new Lazy<CognitoIdentity>(() => JsonSerializer.Deserialize<CognitoIdentity>(runtimeApiHeaders.CognitoIdentityJson));
+            _cognitoClientContextLazy = new Lazy<CognitoClientContext>(() => JsonSerializer.Deserialize<CognitoClientContext>(runtimeApiHeaders.ClientContextJson));
 
             // set environment variable so that if the function uses the XRay client it will work correctly
             _lambdaEnvironment.SetXAmznTraceId(_runtimeApiHeaders.TraceId);

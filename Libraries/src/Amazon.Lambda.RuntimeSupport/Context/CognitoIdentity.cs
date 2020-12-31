@@ -14,30 +14,16 @@
  */
 using Amazon.Lambda.Core;
 using System;
-using ThirdParty.Json.LitJson;
+using System.Text.Json.Serialization;
 
 namespace Amazon.Lambda.RuntimeSupport
 {
     internal class CognitoIdentity : ICognitoIdentity
     {
+        [JsonPropertyName( "identityId" )]
         public string IdentityId { get; internal set; }
 
+        [JsonPropertyName( "identityPoolId" )]
         public string IdentityPoolId { get; internal set; }
-
-        internal static CognitoIdentity FromJson(string json)
-        {
-            var result = new CognitoIdentity();
-
-            if (!string.IsNullOrWhiteSpace(json))
-            {
-                var jsonData = JsonMapper.ToObject(json);
-                if (jsonData["identityId"] != null)
-                    result.IdentityId = jsonData["identityId"].ToString();
-                if (jsonData["identityPoolId"] != null)
-                    result.IdentityPoolId = jsonData["identityPoolId"].ToString();
-            }
-
-            return result;
-        }
     }
 }
