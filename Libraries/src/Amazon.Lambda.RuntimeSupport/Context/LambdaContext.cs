@@ -25,23 +25,17 @@ namespace Amazon.Lambda.RuntimeSupport
 
         private LambdaEnvironment _lambdaEnvironment;
         private RuntimeApiHeaders _runtimeApiHeaders;
-        private IDateTimeHelper _dateTimeHelper;
         private long _deadlineMs;
         private int _memoryLimitInMB;
         private Lazy<CognitoIdentity> _cognitoIdentityLazy;
         private Lazy<CognitoClientContext> _cognitoClientContextLazy;
 
-        public LambdaContext(RuntimeApiHeaders runtimeApiHeaders, LambdaEnvironment lambdaEnvironment)
-            : this(runtimeApiHeaders, lambdaEnvironment, new DateTimeHelper())
-        {
-        }
 
-        public LambdaContext(RuntimeApiHeaders runtimeApiHeaders, LambdaEnvironment lambdaEnvironment, IDateTimeHelper dateTimeHelper)
+        public LambdaContext(RuntimeApiHeaders runtimeApiHeaders, LambdaEnvironment lambdaEnvironment)
         {
 
             _lambdaEnvironment = lambdaEnvironment;
             _runtimeApiHeaders = runtimeApiHeaders;
-            _dateTimeHelper = dateTimeHelper;
 
             int.TryParse(_lambdaEnvironment.FunctionMemorySize, out _memoryLimitInMB);
             long.TryParse(_runtimeApiHeaders.DeadlineMs, out _deadlineMs);
@@ -76,6 +70,6 @@ namespace Amazon.Lambda.RuntimeSupport
 
         public int MemoryLimitInMB => _memoryLimitInMB;
 
-        public TimeSpan RemainingTime => TimeSpan.FromMilliseconds(_deadlineMs - (_dateTimeHelper.UtcNow - UnixEpoch).TotalMilliseconds);
+        public TimeSpan RemainingTime => TimeSpan.FromMilliseconds(_deadlineMs - (DateTime.UtcNow - UnixEpoch).TotalMilliseconds);
     }
 }

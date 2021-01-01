@@ -13,7 +13,6 @@
  * permissions and limitations under the License.
  */
 using Amazon.Lambda.Core;
-using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 

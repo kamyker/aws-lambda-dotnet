@@ -12,12 +12,8 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-using Amazon.Lambda.Core;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,26 +35,15 @@ namespace Amazon.Lambda.RuntimeSupport
         /// Create a new RuntimeApiClient
         /// </summary>
         /// <param name="httpClient">The HttpClient to use to communicate with the Runtime API.</param>
-        public RuntimeApiClient(HttpClient httpClient)
-            : this(new SystemEnvironmentVariables(), httpClient)
-        {
-        }
 
-        internal RuntimeApiClient(IEnvironmentVariables environmentVariables, HttpClient httpClient)
+        internal RuntimeApiClient(HttpClient httpClient)
         {
             ExceptionConverter = ExceptionInfo.GetExceptionInfo;
             _httpClient = httpClient;
-            LambdaEnvironment = new LambdaEnvironment(environmentVariables);
+            LambdaEnvironment = new LambdaEnvironment();
             var internalClient = new InternalRuntimeApiClient(httpClient);
             internalClient.BaseUrl = "http://" + LambdaEnvironment.RuntimeServerHostAndPort + internalClient.BaseUrl;
             _internalClient = internalClient;
-        }
-
-        internal RuntimeApiClient(IEnvironmentVariables environmentVariables, IInternalRuntimeApiClient internalClient)
-        {
-            LambdaEnvironment = new LambdaEnvironment(environmentVariables);
-            _internalClient = internalClient;
-            ExceptionConverter = ExceptionInfo.GetExceptionInfo;
         }
 
         /// <summary>

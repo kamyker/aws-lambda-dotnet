@@ -22,6 +22,7 @@
  */
 
 using System.Text.Json;
+using System.Net.Http.Json;
 
 namespace Amazon.Lambda.RuntimeSupport
 {
@@ -119,7 +120,7 @@ namespace Amazon.Lambda.RuntimeSupport
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
                     if (lambda_Runtime_Function_Error_Type != null)
-                        request_.Headers.TryAddWithoutValidation("Lambda-Runtime-Function-Error-Type", ConvertToString(lambda_Runtime_Function_Error_Type, System.Globalization.CultureInfo.InvariantCulture));
+                        request_.Headers.TryAddWithoutValidation("Lambda-Runtime-Function-Error-Type", lambda_Runtime_Function_Error_Type);
                     using (var content_ = new System.Net.Http.StringContent(errorJson))
                     {
                         content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(ErrorContentType);
@@ -144,23 +145,21 @@ namespace Amazon.Lambda.RuntimeSupport
 
                             ProcessResponse(client_, response_);
 
-                            var status_ = ((int)response_.StatusCode).ToString();
-                            if (status_ == "202")
+                            var status_ = (int)response_.StatusCode;
+                            if (status_ == 202)
                             {
-                                var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                                var result_ = default(StatusResponse);
                                 try
                                 {
-                                    result_ = JsonSerializer.Deserialize<StatusResponse>(responseData_);
+                                    var result_ = await response_.Content.ReadFromJsonAsync<StatusResponse>( );
                                     return new SwaggerResponse<StatusResponse>((int)response_.StatusCode, headers_, result_);
                                 }
                                 catch (System.Exception exception_)
                                 {
-                                    throw new RuntimeApiClientException("Could not deserialize the response body.", (int)response_.StatusCode, responseData_, headers_, exception_);
+                                    throw new RuntimeApiClientException("Could not deserialize the response body.", (int)response_.StatusCode, await response_.Content.ReadAsStringAsync(), headers_, exception_);
                                 }
                             }
                             else
-                            if (status_ == "403")
+                            if (status_ == 403)
                             {
                                 var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
                                 var result_ = default(ErrorResponse);
@@ -175,13 +174,13 @@ namespace Amazon.Lambda.RuntimeSupport
                                 throw new RuntimeApiClientException<ErrorResponse>("Forbidden", (int)response_.StatusCode, responseData_, headers_, result_, null);
                             }
                             else
-                            if (status_ == "500")
+                            if (status_ == 500)
                             {
                                 var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
                                 throw new RuntimeApiClientException("Container error. Non-recoverable state. Runtime should exit promptly.\n", (int)response_.StatusCode, responseData_, headers_, null);
                             }
                             else
-                            if (status_ != "200" && status_ != "204")
+                            if (status_ != 200 && status_ != 204)
                             {
                                 var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
                                 throw new RuntimeApiClientException("The HTTP status code of the response was not expected (" + (int)response_.StatusCode + ").", (int)response_.StatusCode, responseData_, headers_, null);
@@ -311,7 +310,7 @@ namespace Amazon.Lambda.RuntimeSupport
 
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/runtime/invocation/{AwsRequestId}/response");
-            urlBuilder_.Replace("{AwsRequestId}", System.Uri.EscapeDataString(ConvertToString(awsRequestId, System.Globalization.CultureInfo.InvariantCulture)));
+            urlBuilder_.Replace("{AwsRequestId}", System.Uri.EscapeDataString(awsRequestId));
 
             var client_ = _httpClient;
             try
@@ -457,7 +456,7 @@ namespace Amazon.Lambda.RuntimeSupport
 
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/runtime/invocation/{AwsRequestId}/error");
-            urlBuilder_.Replace("{AwsRequestId}", System.Uri.EscapeDataString(ConvertToString(awsRequestId, System.Globalization.CultureInfo.InvariantCulture)));
+            urlBuilder_.Replace("{AwsRequestId}", System.Uri.EscapeDataString(awsRequestId));
 
             var client_ = _httpClient;
             try
@@ -465,7 +464,7 @@ namespace Amazon.Lambda.RuntimeSupport
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
                     if (lambda_Runtime_Function_Error_Type != null)
-                        request_.Headers.TryAddWithoutValidation("Lambda-Runtime-Function-Error-Type", ConvertToString(lambda_Runtime_Function_Error_Type, System.Globalization.CultureInfo.InvariantCulture));
+                        request_.Headers.TryAddWithoutValidation("Lambda-Runtime-Function-Error-Type", lambda_Runtime_Function_Error_Type);
                     using (var content_ = new System.Net.Http.StringContent(errorJson))
                     {
                         content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(ErrorContentType);
@@ -561,42 +560,6 @@ namespace Amazon.Lambda.RuntimeSupport
             finally
             {
             }
-        }
-
-        private string ConvertToString(object value, System.Globalization.CultureInfo cultureInfo)
-        {
-            if (value is System.Enum)
-            {
-                string name = System.Enum.GetName(value.GetType(), value);
-                if (name != null)
-                {
-                    var field = System.Reflection.IntrospectionExtensions.GetTypeInfo(value.GetType()).GetDeclaredField(name);
-                    if (field != null)
-                    {
-                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(System.Runtime.Serialization.EnumMemberAttribute))
-                            as System.Runtime.Serialization.EnumMemberAttribute;
-                        if (attribute != null)
-                        {
-                            return attribute.Value;
-                        }
-                    }
-                }
-            }
-            else if (value is bool)
-            {
-                return System.Convert.ToString(value, cultureInfo).ToLowerInvariant();
-            }
-            else if (value is byte[])
-            {
-                return System.Convert.ToBase64String((byte[])value);
-            }
-            else if (value != null && value.GetType().IsArray)
-            {
-                var array = System.Linq.Enumerable.OfType<object>((System.Array)value);
-                return string.Join(",", System.Linq.Enumerable.Select(array, o => ConvertToString(o, cultureInfo)));
-            }
-
-            return System.Convert.ToString(value, cultureInfo);
         }
     }
 
